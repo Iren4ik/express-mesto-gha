@@ -16,11 +16,13 @@ const getUsers = (req, res) => {
 
 const getUserbyId = (req, res) => {
   User.findById(req.params.userId)
-    .orFail(new Error('NotValidId'))
+    .orFail(new Error('NotFound'))
     .then((user) => res.status(Ok).send({ data: user }))
     .catch((err) => {
-      if (err.message === 'NotValidId') {
+      if (err.message === 'NotFound') {
         res.status(NotFound).send({ message: 'Пользователь с таким id не найден' });
+      } else if (err.name === 'ValidationError') {
+        res.status(BadRequest).send({ message: `Некорректные данные: ${err.message}` });
       } else {
         res.status(InternalServerError).send({ message: 'На сервере произошла ошибка' });
       }
@@ -43,10 +45,10 @@ const createUser = (req, res) => {
 const editProfile = (req, res) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
-    .orFail(new Error('NotValidId'))
+    .orFail(new Error('NotFound'))
     .then((user) => res.status(Ok).send({ data: user }))
     .catch((err) => {
-      if (err.message === 'NotValidId') {
+      if (err.message === 'NotFound') {
         res.status(NotFound).send({ message: 'Пользователь с таким id не найден' });
       } else if (err.name === 'ValidationError') {
         res.status(BadRequest).send({ message: `Некорректные данные: ${err.message}` });
@@ -59,10 +61,10 @@ const editProfile = (req, res) => {
 const editAvatar = (req, res) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
-    .orFail(new Error('NotValidId'))
+    .orFail(new Error('NotFound'))
     .then((user) => res.status(Ok).send({ data: user }))
     .catch((err) => {
-      if (err.message === 'NotValidId') {
+      if (err.message === 'NotFound') {
         res.status(NotFound).send({ message: 'Пользователь с таким id не найден' });
       } else if (err.name === 'ValidationError') {
         res.status(BadRequest).send({ message: `Некорректные данные: ${err.message}` });
