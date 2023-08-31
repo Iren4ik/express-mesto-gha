@@ -35,12 +35,12 @@ const createCard = (req, res) => {
 
 const deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
-    .orFail(new Error('NotValidCardId'))
+    .orFail(new Error('NotFound'))
     .then(() => { res.status(Ok).send({ message: 'Карточка успешно удалена' }); })
     .catch((err) => {
-      if (err.message === 'NotValidCardId') {
+      if (err.message === 'NotFound') {
         res.status(NotFound).send({ message: 'Карточка с таким id не найдена' });
-      } else if (err.name === 'ValidationError') {
+      } else if (err.name === 'CastError') {
         res.status(BadRequest).send({ message: `Некорректные данные: ${err.message}` });
       } else {
         res.status(InternalServerError).send({ message: 'На сервере произошла ошибка' });
@@ -52,12 +52,12 @@ const likeCard = (req, res) => {
   // добавить _id в массив, если его там нeт
   Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user._id } }, { new: true })
     .populate(['owner'])
-    .orFail(new Error('NotValidCardId'))
+    .orFail(new Error('NotFound'))
     .then((card) => res.status(Ok).send({ likes: card.likes }))
     .catch((err) => {
-      if (err.message === 'NotValidCardId') {
+      if (err.message === 'NotFound') {
         res.status(NotFound).send({ message: 'Карточка с таким id не найдена' });
-      } else if (err.name === 'ValidationError') {
+      } else if (err.name === 'CastError') {
         res.status(BadRequest).send({ message: `Некорректные данные: ${err.message}` });
       } else {
         res.status(InternalServerError).send({ message: 'На сервере произошла ошибка' });
@@ -69,12 +69,12 @@ const dislikeCard = (req, res) => {
   // убрать _id из массива
   Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
     .populate(['owner'])
-    .orFail(new Error('NotValidCardId'))
+    .orFail(new Error('NotFound'))
     .then((card) => res.status(Ok).send({ likes: card.likes }))
     .catch((err) => {
-      if (err.message === 'NotValidCardId') {
+      if (err.message === 'NotFound') {
         res.status(NotFound).send({ message: 'Карточка с таким id не найдена' });
-      } else if (err.name === 'ValidationError') {
+      } else if (err.name === 'CastError') {
         res.status(BadRequest).send({ message: `Некорректные данные: ${err.message}` });
       } else {
         res.status(InternalServerError).send({ message: 'На сервере произошла ошибка' });
