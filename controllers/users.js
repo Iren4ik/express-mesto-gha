@@ -16,16 +16,11 @@ const getUsers = (req, res) => {
 
 const getUserbyId = (req, res) => {
   User.findById(req.params.userId)
-    .then((user) => {
-      if (!user) {
-        res.status(NotFound).send({ message: 'Пользователь по указанному _id не найден.' });
-        return;
-      }
-      res.status(Ok).send({ data: user });
-    })
+    .orFail(new Error('NotValidId'))
+    .then((user) => res.status(Ok).send({ data: user }))
     .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(BadRequest).send({ message: `Некорректные данные: ${err.message}` });
+      if (err.message === 'NotValidId') {
+        res.status(NotFound).send({ message: 'Пользователь с таким id не найден' });
       } else {
         res.status(InternalServerError).send({ message: 'На сервере произошла ошибка' });
       }
@@ -47,36 +42,34 @@ const createUser = (req, res) => {
 
 const editProfile = (req, res) => {
   const { name, about } = req.body;
-  if (req.user._id) {
-    User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
-      .then((user) => res.status(Ok).send({ data: user }))
-      .catch((err) => {
-        if (err.name === 'ValidationError') {
-          res.status(BadRequest).send({ message: `Некорректные данные: ${err.message}` });
-        } else {
-          res.status(NotFound).send({ message: 'Пользователь с таким id не найден' });
-        }
-      });
-  } else {
-    res.status(InternalServerError).send({ message: 'На сервере произошла ошибка' });
-  }
+  User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
+    .orFail(new Error('NotValidId'))
+    .then((user) => res.status(Ok).send({ data: user }))
+    .catch((err) => {
+      if (err.message === 'NotValidId') {
+        res.status(NotFound).send({ message: 'Пользователь с таким id не найден' });
+      } else if (err.name === 'ValidationError') {
+        res.status(BadRequest).send({ message: `Некорректные данные: ${err.message}` });
+      } else {
+        res.status(InternalServerError).send({ message: 'На сервере произошла ошибка' });
+      }
+    });
 };
 
 const editAvatar = (req, res) => {
   const { avatar } = req.body;
-  if (req.user._id) {
-    User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
-      .then((user) => res.status(Ok).send({ data: user }))
-      .catch((err) => {
-        if (err.name === 'ValidationError') {
-          res.status(BadRequest).send({ message: `Некорректные данные: ${err.message}` });
-        } else {
-          res.status(NotFound).send({ message: 'Пользователь с таким id не найден' });
-        }
-      });
-  } else {
-    res.status(InternalServerError).send({ message: 'На сервере произошла ошибка' });
-  }
+  User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
+    .orFail(new Error('NotValidId'))
+    .then((user) => res.status(Ok).send({ data: user }))
+    .catch((err) => {
+      if (err.message === 'NotValidId') {
+        res.status(NotFound).send({ message: 'Пользователь с таким id не найден' });
+      } else if (err.name === 'ValidationError') {
+        res.status(BadRequest).send({ message: `Некорректные данные: ${err.message}` });
+      } else {
+        res.status(InternalServerError).send({ message: 'На сервере произошла ошибка' });
+      }
+    });
 };
 
 module.exports = {

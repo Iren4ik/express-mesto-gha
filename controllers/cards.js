@@ -55,15 +55,12 @@ const likeCard = (req, res) => {
   // добавить _id в массив, если его там нeт
   Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user._id } }, { new: true })
     .populate(['owner'])
-    .then((card) => {
-      if (!card) {
-        res.status(NotFound).send({ message: 'Карточка не найдена' });
-        return;
-      }
-      res.status(Ok).send({ likes: card.likes });
-    })
+    .orFail(new Error('NotValidCardId'))
+    .then((card) => res.status(Ok).send({ likes: card.likes }))
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.message === 'NotValidCardId') {
+        res.status(NotFound).send({ message: 'Карточка с таким id не найдена' });
+      } else if (err.name === 'ValidationError') {
         res.status(BadRequest).send({ message: `Некорректные данные: ${err.message}` });
       } else {
         res.status(InternalServerError).send({ message: 'На сервере произошла ошибка' });
@@ -75,15 +72,12 @@ const dislikeCard = (req, res) => {
   // убрать _id из массива
   Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
     .populate(['owner'])
-    .then((card) => {
-      if (!card) {
-        res.status(NotFound).send({ message: 'Карточка не найдена' });
-        return;
-      }
-      res.status(Ok).send({ likes: card.likes });
-    })
+    .orFail(new Error('NotValidCardId'))
+    .then((card) => res.status(Ok).send({ likes: card.likes }))
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.message === 'NotValidCardId') {
+        res.status(NotFound).send({ message: 'Карточка с таким id не найдена' });
+      } else if (err.name === 'ValidationError') {
         res.status(BadRequest).send({ message: `Некорректные данные: ${err.message}` });
       } else {
         res.status(InternalServerError).send({ message: 'На сервере произошла ошибка' });
