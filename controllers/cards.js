@@ -35,15 +35,12 @@ const createCard = (req, res) => {
 
 const deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
-    .then((card) => {
-      if (!card) {
-        res.status(NotFound).send({ message: 'Карточка не найдена' });
-        return;
-      }
-      res.status(Ok).send({ message: 'Карточка успешно удалена' });
-    })
+    .orFail(new Error('NotValidCardId'))
+    .then(() => { res.status(Ok).send({ message: 'Карточка успешно удалена' }); })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.message === 'NotValidCardId') {
+        res.status(NotFound).send({ message: 'Карточка с таким id не найдена' });
+      } else if (err.name === 'ValidationError') {
         res.status(BadRequest).send({ message: `Некорректные данные: ${err.message}` });
       } else {
         res.status(InternalServerError).send({ message: 'На сервере произошла ошибка' });
