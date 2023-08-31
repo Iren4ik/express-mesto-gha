@@ -21,7 +21,7 @@ const getUserbyId = (req, res) => {
     .catch((err) => {
       if (err.message === 'NotFound') {
         res.status(NotFound).send({ message: 'Пользователь с таким id не найден' });
-      } else if (err.name === 'ValidationError') {
+      } else if (err.name === 'CastError') {
         res.status(BadRequest).send({ message: `Некорректные данные: ${err.message}` });
       } else {
         res.status(InternalServerError).send({ message: 'На сервере произошла ошибка' });
