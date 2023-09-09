@@ -17,7 +17,7 @@ app.use(helmet());
 
 app.use((req, res, next) => {
   req.user = {
-    _id: '64eefb879942234182e4c71b', // Авторизованный пользователь
+    _id: '64ee0eb1f69f7361ed7982fc', // Тестовый пользователь 3
   };
   next();
 });

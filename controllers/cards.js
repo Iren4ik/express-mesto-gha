@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const { Error } = require('mongoose');
 const Card = require('../models/card');
 const BadRequestError = require('../errors/BadRequestError');
 const NotFoundError = require('../errors/NotFoundError');
@@ -28,7 +28,7 @@ const createCard = (req, res, next) => {
         .catch(() => next(new NotFoundError('Карточка с таким id не найдена')));
     })
     .catch((err) => {
-      if (err instanceof mongoose.Error.ValidationError) {
+      if (err instanceof Error.ValidationError) {
         next(new BadRequestError(`Некорректные данные: ${err.message}`));
       } else {
         next(err);
@@ -41,9 +41,9 @@ const deleteCard = (req, res, next) => {
     .orFail()
     .then(() => { res.status(Ok).send({ message: 'Карточка успешно удалена' }); })
     .catch((err) => {
-      if (err instanceof mongoose.Error.CastError) {
+      if (err instanceof Error.CastError) {
         next(new BadRequestError(`Некорректные данные: ${err.message}`));
-      } else if (err instanceof mongoose.Error.DocumentNotFoundError) {
+      } else if (err instanceof Error.DocumentNotFoundError) {
         next(new NotFoundError('Карточка с таким id не найден'));
       } else {
         next(err);
@@ -58,9 +58,9 @@ const likeCard = (req, res, next) => {
     .orFail()
     .then((card) => res.status(Ok).send({ likes: card.likes }))
     .catch((err) => {
-      if (err instanceof mongoose.Error.CastError) {
+      if (err instanceof Error.CastError) {
         next(new BadRequestError(`Некорректные данные: ${err.message}`));
-      } else if (err instanceof mongoose.Error.DocumentNotFoundError) {
+      } else if (err instanceof Error.DocumentNotFoundError) {
         next(new NotFoundError('Карточка с таким id не найден'));
       } else {
         next(err);
@@ -75,9 +75,9 @@ const dislikeCard = (req, res, next) => {
     .orFail()
     .then((card) => res.status(Ok).send({ likes: card.likes }))
     .catch((err) => {
-      if (err instanceof mongoose.Error.CastError) {
+      if (err instanceof Error.CastError) {
         next(new BadRequestError(`Некорректные данные: ${err.message}`));
-      } else if (err instanceof mongoose.Error.DocumentNotFoundError) {
+      } else if (err instanceof Error.DocumentNotFoundError) {
         next(new NotFoundError('Карточка с таким id не найден'));
       } else {
         next(err);
