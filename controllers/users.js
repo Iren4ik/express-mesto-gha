@@ -1,3 +1,4 @@
+const { SECRET_KEY = 'some-secret-key' } = process.env;
 const { Error } = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -36,7 +37,7 @@ const login = (req, res, next) => {
   const { email, password } = req.body;
   return User.findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
+      const token = jwt.sign({ _id: user._id }, SECRET_KEY, { expiresIn: '7d' });
       res.cookie('jwt', token, { httpOnly: true });
       res.status(Ok).send({ token });
     })
