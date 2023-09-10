@@ -2,13 +2,11 @@ const { Error } = require('mongoose');
 const Card = require('../models/card');
 const BadRequestError = require('../errors/BadRequestError');
 const NotFoundError = require('../errors/NotFoundError');
+const ForbiddenError = require('../errors/ForbiddenError');
 
 const {
   Ok,
   Created,
-  // BadRequest,
-  // NotFound,
-  // InternalServerError,
 } = require('../utils/errors');
 
 const getCards = (req, res, next) => {
@@ -37,14 +35,22 @@ const createCard = (req, res, next) => {
 };
 
 const deleteCard = (req, res, next) => {
-  Card.findByIdAndRemove(req.params.cardId)
+  Card.findById(req.params.cardId)
     .orFail()
-    .then(() => { res.status(Ok).send({ message: 'Карточка успешно удалена' }); })
+    .then((card) => {
+      if (card.owner.toString() === req.user._id) {
+        Card.deleteOne(card)
+          .then(() => res.status(Ok).send({ message: 'Карточка успешно удалена' }))
+          .catch(next);
+      } else {
+        throw new ForbiddenError('Чужую карточку удалить нельзя');
+      }
+    })
     .catch((err) => {
       if (err instanceof Error.CastError) {
         next(new BadRequestError(`Некорректные данные: ${err.message}`));
       } else if (err instanceof Error.DocumentNotFoundError) {
-        next(new NotFoundError('Карточка с таким id не найден'));
+        next(new NotFoundError('Карточка с таким id не найдена'));
       } else {
         next(err);
       }
@@ -61,7 +67,7 @@ const likeCard = (req, res, next) => {
       if (err instanceof Error.CastError) {
         next(new BadRequestError(`Некорректные данные: ${err.message}`));
       } else if (err instanceof Error.DocumentNotFoundError) {
-        next(new NotFoundError('Карточка с таким id не найден'));
+        next(new NotFoundError('Карточка с таким id не найдена'));
       } else {
         next(err);
       }
@@ -78,7 +84,7 @@ const dislikeCard = (req, res, next) => {
       if (err instanceof Error.CastError) {
         next(new BadRequestError(`Некорректные данные: ${err.message}`));
       } else if (err instanceof Error.DocumentNotFoundError) {
-        next(new NotFoundError('Карточка с таким id не найден'));
+        next(new NotFoundError('Карточка с таким id не найдена'));
       } else {
         next(err);
       }
