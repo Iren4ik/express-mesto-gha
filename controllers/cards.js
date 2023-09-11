@@ -22,8 +22,15 @@ const createCard = (req, res, next) => {
     .then((card) => {
       Card.findById(card._id)
         .populate('owner')
+        .orFail()
         .then((data) => res.status(Created).send(data))
-        .catch(() => next(new NotFoundError('Карточка с таким id не найдена')));
+        .catch((err) => {
+          if (err instanceof Error.DocumentNotFoundError) {
+            next(new NotFoundError('Карточка с таким id не найдена'));
+          } else {
+            next(err);
+          }
+        });
     })
     .catch((err) => {
       if (err instanceof Error.ValidationError) {

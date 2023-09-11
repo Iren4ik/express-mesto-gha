@@ -99,6 +99,7 @@ const editAvatar = (req, res, next) => {
 
 const getCurrentUser = (req, res, next) => {
   User.findById(req.user._id)
+    .orFail()
     .then((currentUser) => res.status(Ok).send({ data: currentUser }))
     .catch((err) => {
       if (err instanceof Error.DocumentNotFoundError) {
