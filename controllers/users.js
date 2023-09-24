@@ -20,7 +20,11 @@ const createUser = (req, res, next) => {
       name, about, avatar, email, password: hash,
     }))
     .then((user) => res.status(Created).send({
-      _id: user._id, name: user.name, about: user.about, avatar: user.avatar, email: user.email,
+      _id: user._id,
+      name: user.name,
+      about: user.about,
+      avatar: user.avatar,
+      email: user.email,
     }))
     .catch((err) => {
       if (err.code === 11000) {
@@ -44,16 +48,18 @@ const login = (req, res, next) => {
     .catch(next);
 };
 
+// send({ data: users })) --> users
 const getUsers = (req, res, next) => {
   User.find({})
-    .then((users) => res.status(Ok).send({ data: users }))
+    .then((users) => res.status(Ok).send(users))
     .catch(next);
 };
 
+// send({ data: user })) --> user
 const getUserbyId = (req, res, next) => {
   User.findById(req.params.userId)
     .orFail()
-    .then((user) => res.status(Ok).send({ data: user }))
+    .then((user) => res.status(Ok).send(user))
     .catch((err) => {
       if (err instanceof Error.CastError) {
         next(new BadRequestError(`Некорректные данные: ${err.message}`));
@@ -65,11 +71,12 @@ const getUserbyId = (req, res, next) => {
     });
 };
 
+// send({ data: user })) --> user
 const editProfile = (req, res, next) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .orFail()
-    .then((user) => res.status(Ok).send({ data: user }))
+    .then((user) => res.status(Ok).send(user))
     .catch((err) => {
       if (err instanceof Error.DocumentNotFoundError) {
         next(new NotFoundError('Пользователь с таким id не найден'));
@@ -81,11 +88,12 @@ const editProfile = (req, res, next) => {
     });
 };
 
+// send({ data: user })) --> user
 const editAvatar = (req, res, next) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .orFail()
-    .then((user) => res.status(Ok).send({ data: user }))
+    .then((user) => res.status(Ok).send(user))
     .catch((err) => {
       if (err instanceof Error.DocumentNotFoundError) {
         next(new NotFoundError('Пользователь с таким id не найден'));
@@ -97,10 +105,11 @@ const editAvatar = (req, res, next) => {
     });
 };
 
+// data: user --> user
 const getCurrentUser = (req, res, next) => {
   User.findById(req.user._id)
     .orFail()
-    .then((currentUser) => res.status(Ok).send({ data: currentUser }))
+    .then((currentUser) => res.status(Ok).send(currentUser))
     .catch((err) => {
       if (err instanceof Error.DocumentNotFoundError) {
         next(new NotFoundError('Пользователь с таким id не найден'));

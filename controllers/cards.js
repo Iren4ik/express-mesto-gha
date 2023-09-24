@@ -9,10 +9,11 @@ const {
   Created,
 } = require('../utils/errors');
 
+// send({ data: cards })) --> cards
 const getCards = (req, res, next) => {
   Card.find({})
-    .populate(['owner', 'likes'])
-    .then((cards) => res.status(Ok).send({ data: cards }))
+    // .populate(['owner', 'likes'])
+    .then((cards) => res.status(Ok).send(cards))
     .catch(next);
 };
 
@@ -21,7 +22,7 @@ const createCard = (req, res, next) => {
   Card.create({ name, link, owner: req.user._id })
     .then((card) => {
       Card.findById(card._id)
-        .populate('owner')
+        // .populate('owner')
         .orFail()
         .then((data) => res.status(Created).send(data))
         .catch((err) => {
@@ -67,9 +68,9 @@ const deleteCard = (req, res, next) => {
 const likeCard = (req, res, next) => {
   // добавить _id в массив, если его там нeт
   Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user._id } }, { new: true })
-    .populate(['owner'])
+    // .populate(['owner'])
     .orFail()
-    .then((card) => res.status(Ok).send({ likes: card.likes }))
+    .then((card) => res.status(Ok).send(card))
     .catch((err) => {
       if (err instanceof Error.CastError) {
         next(new BadRequestError(`Некорректные данные: ${err.message}`));
@@ -82,11 +83,11 @@ const likeCard = (req, res, next) => {
 };
 
 const dislikeCard = (req, res, next) => {
-  // убрать _id из массива
+  // убрать _id из delete
   Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
-    .populate(['owner'])
+    // .populate(['owner'])
     .orFail()
-    .then((card) => res.status(Ok).send({ likes: card.likes }))
+    .then((card) => res.status(Ok).send(card))
     .catch((err) => {
       if (err instanceof Error.CastError) {
         next(new BadRequestError(`Некорректные данные: ${err.message}`));
