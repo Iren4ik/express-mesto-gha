@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const UnauthorizedError = require('../errors/UnauthorizedError');
 
 // node -e "console.log(require('crypto').randomBytes(32).toString('hex'));"
-console.log(SECRET_KEY);
+// console.log(SECRET_KEY);
 
 const auth = (req, res, next) => {
   const { authorization } = req.headers;
